@@ -12,22 +12,26 @@ import javax.sound.sampled.*;
 public class SpyMicServer {
 	static int portNumber = 8090;
 	int bufferSize = 1024;
+	byte[] receiveBuffer = new byte[bufferSize];
+	Clip soundToPlay;
+	public void playAudio() {
+		AudioFormat format = new AudioFormat(11025.f,  8, 1, false, true);
+		try {
+			soundToPlay = AudioSystem.getClip();
+			soundToPlay.open(format, receiveBuffer, 0, bufferSize);
+			soundToPlay.start();
+		} catch (LineUnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public void run(int port) {
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			System.out.println("Server is listening on port " + port);
-			byte[] receiveBuffer = new byte[bufferSize];
+			//byte[] receiveBuffer = new byte[bufferSize];
 			Socket clientSocket = serverSocket.accept();
 			DataInputStream recData = new DataInputStream(clientSocket.getInputStream());
 			recData.readFully(receiveBuffer);
-			AudioFormat format = new AudioFormat(11025.f,  8, 1, false, true);
-			try {
-				Clip soundToPlay = AudioSystem.getClip();
-				soundToPlay.open(format, receiveBuffer, 0, bufferSize);
-				soundToPlay.start();
-			} catch (LineUnavailableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			serverSocket.close();
 		}
 		catch (IOException ex) {
@@ -41,6 +45,7 @@ public class SpyMicServer {
 		SpyMicServer newServer = new SpyMicServer();
 		while(true) {
 			newServer.run(portNumber);
+			newServer.playAudio();
 		}
 	}
 

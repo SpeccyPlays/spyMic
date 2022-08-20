@@ -53,11 +53,11 @@ int main (){
         // event loop added otherwise window will be unresponsive
         }
         listener.accept(socket);
-        std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
+//        std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
         // Receive data from the client
         std::size_t received = 0;
         socket.receive(receiveBuffer, sizeof(receiveBuffer), received);
-        std::cout << "Received :" << received << std::endl;
+//        std::cout << "Received :" << received << std::endl;
         if (saveToFile){
            saveToRawFile();
         }
@@ -79,10 +79,18 @@ void drawAudioToWindow(sf::RenderWindow &window){
     sf::VertexArray line(sf::Lines, 2);
     line[0].color = sf::Color::White;
     line[1].color = sf::Color::White;
+
     for (int i = 0; i < (int)sizeof(drawBuffer); i++){
+        if (drawBuffer[i] > 80 && drawBuffer[i] < 87){
+            line[0].position = sf::Vector2f((float)i, 255);
+            line[1].position = sf::Vector2f((float)i, 255);
+        }
+        else {
             line[0].position = sf::Vector2f((float)i, 255);
             line[1].position = sf::Vector2f((float)i, 255 - (float)drawBuffer[i]);
-            window.draw(line);
+        }
+        window.draw(line);
+//        std::cout << (int)drawBuffer[i] << std::endl;
     }
     window.display();
 }

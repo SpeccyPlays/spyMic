@@ -14,25 +14,21 @@ Liveplays the data it receives
 #include <fstream>
 
 #define BUFFERSIZE 1024
+#define SAMPLEFREQUENCY 11025
 
 void myAudioCallBack(void *userdata, uint8_t *stream, int len);
 void saveToRawFile();
-void drawAudioToWindow(sf::RenderWindow &window, sf::Texture &texture, sf::Sprite &sprite);
+void drawAudioToWindow(sf::RenderWindow &window);
 uint8_t receiveBuffer[BUFFERSIZE] = {0};
 uint8_t drawBuffer[BUFFERSIZE] = {0};
 
 int main (){
     //setup display window
     sf::RenderWindow window(sf::VideoMode(1024, 300), "SpyMic");
-    sf::Texture texture;
-    if (!texture.create(1024, 255)){
-        std::cout << "Error creating texture" << std::endl;
-    }
-    sf::Sprite sprite;
     //setup all audio settings
     SDL_Init(SDL_INIT_AUDIO);
     SDL_AudioSpec audiospec;
-    audiospec.freq = 10000;
+    audiospec.freq = SAMPLEFREQUENCY;
     audiospec.format = AUDIO_U8;
     audiospec.channels = 1;
     audiospec.silence = 127;
@@ -68,27 +64,26 @@ int main (){
         SDL_PauseAudio(0);
         //drawing stuff
         memcpy(drawBuffer, receiveBuffer, BUFFERSIZE);
-        drawAudioToWindow(window, texture, sprite);
+        drawAudioToWindow(window);
     } //end while window openloop
     listener.close();
     SDL_Quit();
 return 0;
 } //end main
 
-void drawAudioToWindow(sf::RenderWindow &window, sf::Texture &texture, sf::Sprite &sprite){
+void drawAudioToWindow(sf::RenderWindow &window){
     /*
     Draws audio data on the screen
     */
     window.clear(sf::Color::Black);
-    window.display();
-    sf::Image audioDisplay = texture.copyToImage();
-    sf::Color colour = sf::Color::White;
+    sf::VertexArray line(sf::Lines, 2);
+    line[0].color = sf::Color::White;
+    line[1].color = sf::Color::White;
     for (int i = 0; i < (int)sizeof(drawBuffer); i++){
-        audioDisplay.setPixel(i, (Uint8)drawBuffer[i], colour);
+            line[0].position = sf::Vector2f((float)i, 255);
+            line[1].position = sf::Vector2f((float)i, 255 - (float)drawBuffer[i]);
+            window.draw(line);
     }
-    texture.loadFromImage(audioDisplay);
-    sprite.setTexture(texture);
-    window.draw(sprite);
     window.display();
 }
 

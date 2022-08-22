@@ -57,7 +57,7 @@ int main (){
         // Receive data from the client
         std::size_t received = 0;
         socket.receive(receiveBuffer, sizeof(receiveBuffer), received);
-//        std::cout << "Received :" << received << std::endl;
+        std::cout << "Received :" << received << std::endl;
         if (saveToFile){
            saveToRawFile();
         }
@@ -80,21 +80,13 @@ void drawAudioToWindow(sf::RenderWindow &window){
     line[0].color = sf::Color::White;
     line[1].color = sf::Color::White;
 
-    for (int i = 0; i < (int)sizeof(drawBuffer); i++){
-        if (drawBuffer[i] > 80 && drawBuffer[i] < 87){
-            line[0].position = sf::Vector2f((float)i, 255);
-            line[1].position = sf::Vector2f((float)i, 255);
-        }
-        else {
-            line[0].position = sf::Vector2f((float)i, 255);
-            line[1].position = sf::Vector2f((float)i, 255 - (float)drawBuffer[i]);
-        }
+    for (int i = 1; i < (int)sizeof(drawBuffer); i++){
+        line[0].position = sf::Vector2f((float)i, 255 - (float)drawBuffer[i-1]);
+        line[1].position = sf::Vector2f((float)i, 255 - (float)drawBuffer[i]);
         window.draw(line);
-//        std::cout << (int)drawBuffer[i] << std::endl;
     }
     window.display();
 }
-
 void myAudioCallBack(void *userdata, uint8_t *stream, int len){
     //called when it's reached playing the end of the audio buffer
     /*

@@ -21,22 +21,26 @@ Press s to toggle saving to file
 
 void myAudioCallBack(void *userdata, uint8_t *stream, int len);
 void saveToRawFile(bool saveToFile);
-void drawAudioToWindow(sf::RenderWindow &window);
+void drawAudioToWindow(sf::RenderWindow &window, bool saveToFile);
 //below are Global as I didn't want to pass them around between functions
 uint8_t receiveBuffer[BUFFERSIZE] = {0};
 uint8_t drawBuffer[BUFFERSIZE] = {0};
 sf::Texture redEyeTexture;
 sf::Texture spyMicLogoTexture;
+sf::Font recordingLabelFont;
 std::ofstream outfile;
 
 int main (){
-    //graphics
+    //Load graphics stuff
     sf::RenderWindow window(sf::VideoMode(WINDOWWIDTH, WINDOWHEIGHT), "SpyMic");
     if (!redEyeTexture.loadFromFile("images/redEye.png")){
         std::cout << "Red eye not loaded" << std::endl;
     }
     if (!spyMicLogoTexture.loadFromFile("images/spyMicLogo.png")){
         std::cout << "Logo not loaded" << std::endl;
+    }
+    if (!recordingLabelFont.loadFromFile("font/zxSpectrum.ttf")){
+        std::cout << "Font not loaded" << std::endl;
     }
     //setup all audio settings
     SDL_Init(SDL_INIT_AUDIO);
@@ -57,7 +61,7 @@ int main (){
     //for save function
     bool saveToFile = false;
     //draw something on the window
-    drawAudioToWindow(window);
+    drawAudioToWindow(window, saveToFile);
     while(window.isOpen()){
         sf::Event event;
         while (window.pollEvent(event)){
@@ -86,14 +90,14 @@ int main (){
         SDL_PauseAudio(0);
         //drawing stuff
         memcpy(drawBuffer, receiveBuffer, BUFFERSIZE);
-        drawAudioToWindow(window);
+        drawAudioToWindow(window, saveToFile);
     } //end while window openloop
     listener.close();
     SDL_Quit();
 return 0;
 } //end main
 
-void drawAudioToWindow(sf::RenderWindow &window){
+void drawAudioToWindow(sf::RenderWindow &window, bool saveToFile){
     /*
     Draws audio data on the screen
     We could draw the whole array but it appears that the audio sample will have duplicate info cos of the sample rate
@@ -113,6 +117,16 @@ void drawAudioToWindow(sf::RenderWindow &window){
     sf::Sprite spyMicLogoSprite;
     spyMicLogoSprite.setTexture(spyMicLogoTexture);
     window.draw(spyMicLogoSprite);
+    //Display recording message if required
+    if (saveToFile){
+        sf::Text text;
+        text.setFont(recordingLabelFont);
+        text.setString("Recording");
+        text.setCharacterSize(12);
+        text.setFillColor(sf::Color::Red);
+        text.setPosition(sf::Vector2f(64, 64));
+        window.draw(text);
+    }
     //draw the samples
     sf::VertexArray line(sf::Lines, 2);
     line[0].color = sf::Color::White;
